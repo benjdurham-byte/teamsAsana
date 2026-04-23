@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting → Asana | Gimme</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E8E4DC;
+    --border-strong: #D0C9BC;
+    --text: #1A1815;
+    --text-muted: #7A7268;
+    --text-faint: #B0A898;
+    --accent: #2D6A4F;
+    --accent-light: #E8F4EE;
+    --accent-hover: #235A40;
+    --danger: #C0392B;
+    --warning: #E67E22;
+    --success: #27AE60;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  .logo {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .step-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 520px) {
+    .setup-grid { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  input[type="password"] {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  textarea {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-strong);
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .btn-secondary:hover { background: var(--bg); }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .status-msg {
+    font-size: 13px;
+    padding: 4px 0;
+    min-height: 22px;
+  }
+
+  .status-msg.success { color: var(--success); }
+  .status-msg.error { color: var(--danger); }
+  .status-msg.loading { color: var(--text-muted); }
+
+  .action-list { margin-top: 0.5rem; }
+
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .action-item:last-child { border-bottom: none; }
+
+  .action-check {
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .action-body { flex: 1; min-width: 0; }
+
+  .action-name {
+    font-size: 14px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 0;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 4px;
+  }
+
+  .action-name:focus {
+    outline: none;
+    border-bottom-color: var(--border-strong);
+  }
+
+  .action-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .action-meta input {
+    font-size: 12px;
+    padding: 3px 8px;
+    background: var(--bg);
+    width: auto;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+
+  .results-list { margin-top: 0.75rem; }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .result-row:last-child { border-bottom: none; }
+
+  .result-ok { color: var(--success); font-size: 12px; font-weight: 500; }
+  .result-fail { color: var(--danger); font-size: 12px; font-weight: 500; }
+
+  .token-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 0.35rem;
+  }
+
+  .token-hint a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .saved-badge {
+    font-size: 11px;
+    color: var(--success);
+    font-weight: 500;
+    display: none;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .collapse-toggle {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .collapse-toggle .arrow {
+    font-size: 10px;
+    color: var(--text-faint);
+    transition: transform 0.2s;
+  }
+
+  .collapse-toggle.open .arrow { transform: rotate(90deg); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">Gimme / Durham Enterprises</div>
+    <h1>Meeting → Asana</h1>
+    <p class="subtitle">Paste Copilot action items from your Teams recap and send them straight to Asana.</p>
+  </header>
+
+  <!-- Setup Card -->
+  <div class="card" id="setup-card">
+    <div class="card-header">
+      <div class="collapse-toggle open" id="setup-toggle" onclick="toggleSetup()">
+        <span class="card-title">Setup</span>
+        <span class="arrow">▶</span>
+      </div>
+      <span class="saved-badge" id="saved-badge">Settings saved</span>
+    </div>
+    <div id="setup-body">
+      <div class="setup-grid">
+        <div>
+          <label>Asana Personal Access Token</label>
+          <input type="password" id="asana-token" placeholder="1/2859020..." autocomplete="off">
+          <div class="token-hint">Get yours at <a href="https://app.asana.com/0/my-apps" target="_blank">app.asana.com/0/my-apps</a></div>
+        </div>
+        <div>
+          <label>Default Asana Project</label>
+          <select id="project-select">
+            <option value="">Enter token first, then load projects</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="loadProjects()">Load my projects</button>
+        <button class="btn btn-secondary" onclick="saveSettings()">Save settings</button>
+        <button class="btn btn-secondary" onclick="clearSettings()" style="color:var(--danger); border-color:var(--danger);">Clear saved token</button>
+        <span class="status-msg" id="setup-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paste Card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Paste action items</span>
+      <span class="step-badge">Step 1</span>
+    </div>
+    <textarea id="paste-input" placeholder="Paste your Copilot action items here from the Teams meeting Recap tab...
+
+Example:
+- Nick will send the Q2 sales report by Friday
+- Sara will follow up with Amanda on packaging copy
+- Ben will schedule the Activity Review for week of the 28th"></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="parseItems()">Parse action items →</button>
+      <button class="btn btn-secondary" onclick="loadDemo()">Load example</button>
+      <span class="status-msg" id="parse-status"></span>
+    </div>
+  </div>
+
+  <!-- Review Card -->
+  <div class="card" id="review-card" style="display:none;">
+    <div class="card-header">
+      <span class="card-title">Review & edit</span>
+      <span class="step-badge">Step 2</span>
+    </div>
+    <div class="action-list" id="action-list"></div>
+    <div class="btn-row" style="margin-top:0.75rem;">
+      <button class="btn btn-secondary" onclick="addBlank()" style="font-size:13px; padding:7px 12px;">+ Add item</button>
+    </div>
+  </div>
+
+  <!-- Send Card -->
+  <div class="card" id="send-card" style="display:none;">
+    <div class="card-header">
+      <span class="card-title">Send to Asana</span>
+      <span class="step-badge">Step 3</span>
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:1rem;">Checked items above will be created as tasks in your selected Asana project.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="send-btn" onclick="sendToAsana()">Send to Asana →</button>
+      <span class="status-msg" id="send-status"></span>
+    </div>
+    <div class="results-list" id="results-list"></div>
+  </div>
+
+</div>
+
+<script>
+let actions = [];
+
+// Load saved settings on page load
+window.onload = () => {
+  const token = localStorage.getItem('asana_token');
+  const projectGid = localStorage.getItem('asana_project_gid');
+  const projectName = localStorage.getItem('asana_project_name');
+
+  if (token) {
+    document.getElementById('asana-token').value = token;
+    document.getElementById('saved-badge').style.display = 'inline';
+  }
+
+  if (projectGid && projectName) {
+    const sel = document.getElementById('project-select');
+    sel.innerHTML = `<option value="${projectGid}">${projectName}</option>`;
+    loadProjects(true);
+    toggleSetup(); // collapse setup if already configured
+  }
+};
+
+function toggleSetup() {
+  const body = document.getElementById('setup-body');
+  const toggle = document.getElementById('setup-toggle');
+  const isOpen = toggle.classList.contains('open');
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.classList.toggle('open', !isOpen);
+}
+
+function clearSettings() {
+  localStorage.removeItem('asana_token');
+  localStorage.removeItem('asana_project_gid');
+  localStorage.removeItem('asana_project_name');
+  document.getElementById('asana-token').value = '';
+  document.getElementById('project-select').innerHTML = '<option value="">Enter token first, then load projects</option>';
+  document.getElementById('saved-badge').style.display = 'none';
+  setStatus('setup-status', 'Settings cleared — paste your token and load projects.', 'success');
+}
+
+function saveSettings() {
+  const token = document.getElementById('asana-token').value.trim();
+  const sel = document.getElementById('project-select');
+  const projectGid = sel.value;
+  const projectName = sel.options[sel.selectedIndex]?.text || '';
+
+  if (!token) { setStatus('setup-status', 'Please enter your Asana token.', 'error'); return; }
+  if (!projectGid) { setStatus('setup-status', 'Please load and select a project.', 'error'); return; }
+
+  localStorage.setItem('asana_token', token);
+  localStorage.setItem('asana_project_gid', projectGid);
+  localStorage.setItem('asana_project_name', projectName);
+
+  document.getElementById('saved-badge').style.display = 'inline';
+  setStatus('setup-status', 'Saved!', 'success');
+  setTimeout(() => toggleSetup(), 800);
+}
+
+async function loadProjects(silent = false) {
+  const token = document.getElementById('asana-token').value.trim();
+  if (!token) { setStatus('setup-status', 'Enter your Asana token first.', 'error'); return; }
+
+  if (!silent) setStatus('setup-status', 'Loading projects...', 'loading');
+
+  try {
+    const resp = await fetch('https://app.asana.com/api/1.0/projects?limit=50&archived=false&workspace=2857448775431', {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => null);
+      const errMsg = errData?.errors?.[0]?.message || `HTTP ${resp.status}`;
+      setStatus('setup-status', `Error: ${errMsg}`, 'error');
+      return;
+    }
+
+    const data = await resp.json();
+    const sel = document.getElementById('project-select');
+    const savedGid = localStorage.getItem('asana_project_gid');
+
+    const allProjects = [{ gid: '1214197304170692', name: 'Meeting Task Imports' }, ...data.data.filter(p => p.gid !== '1214197304170692')];
+    sel.innerHTML = allProjects.map(p =>
+      `<option value="${p.gid}" ${p.gid === (savedGid || '1214197304170692') ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+
+    if (!silent) setStatus('setup-status', `${data.data.length} projects loaded.`, 'success');
+  } catch (e) {
+    setStatus('setup-status', `Could not reach Asana: ${e.message}`, 'error');
+  }
+}
+
+function loadDemo() {
+  document.getElementById('paste-input').value = `Action items
+- Nick will pull together the Q2 sales data for the Ulta review by end of week
+- Sara will follow up with Amanda Weston on the packaging copy approvals today
+- Amber and Ryan will sync tomorrow and submit the Walmart planogram by Thursday
+- Ben will schedule the Activity Review presentation for the week of the 28th`;
+}
+
+function parseItems() {
+  const text = document.getElementById('paste-input').value.trim();
+  if (!text) { setStatus('parse-status', 'Please paste some action items first.', 'error'); return; }
+
+  const lines = text.split('\n')
+    .map(l => l.replace(/^[-•*\d.)\s]+/, '').trim())
+    .filter(l => l.length > 10 && !l.toLowerCase().startsWith('action item'));
+
+  if (!lines.length) { setStatus('parse-status', 'No action items found — try pasting again.', 'error'); return; }
+
+  actions = lines.map((line, i) => {
+    const assigneeMatch = line.match(/^([A-Z][a-z]+(?: [A-Z][a-z]+)?)\s+will\b/);
+    const dueMatch = line.match(/\b(by |before |on )?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|today|tomorrow|end of week|next week|[\w]+ \d{1,2}(?:st|nd|rd|th)?)\b/i);
+    return {
+      id: i,
+      task: line,
+      assignee: assigneeMatch ? assigneeMatch[1] : '',
+      due: dueMatch ? dueMatch[0].replace(/^(by |before |on )/i, '').trim() : '',
+      checked: true
+    };
+  });
+
+  renderActions();
+  document.getElementById('review-card').style.display = 'block';
+  document.getElementById('send-card').style.display = 'block';
+  setStatus('parse-status', `${actions.length} action item${actions.length !== 1 ? 's' : ''} found.`, 'success');
+  document.getElementById('review-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderActions() {
+  const list = document.getElementById('action-list');
+  if (!actions.length) { list.innerHTML = '<div class="empty-state">No action items yet.</div>'; return; }
+
+  list.innerHTML = actions.map((a, i) => `
+    <div class="action-item" id="item-${i}">
+      <input type="checkbox" class="action-check" ${a.checked ? 'checked' : ''} onchange="actions[${i}].checked=this.checked; document.getElementById('item-${i}').style.opacity=this.checked?'1':'0.4'">
+      <div class="action-body">
+        <input class="action-name" type="text" value="${esc(a.task)}" onchange="actions[${i}].task=this.value" placeholder="Task description">
+        <div class="action-meta">
+          <input type="text" value="${esc(a.assignee)}" onchange="actions[${i}].assignee=this.value" placeholder="Assignee">
+          <input type="text" value="${esc(a.due)}" onchange="actions[${i}].due=this.value" placeholder="Due date">
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  actions.forEach((a, i) => {
+    if (!a.checked) document.getElementById(`item-${i}`).style.opacity = '0.4';
+  });
+}
+
+function addBlank() {
+  actions.push({ id: actions.length, task: '', assignee: '', due: '', checked: true });
+  renderActions();
+}
+
+async function sendToAsana() {
+  const token = document.getElementById('asana-token').value.trim() || localStorage.getItem('asana_token');
+  const projectGid = document.getElementById('project-select').value;
+
+  if (!token) { setStatus('send-status', 'Please set up your Asana token first.', 'error'); return; }
+  if (!projectGid) { setStatus('send-status', 'Please select an Asana project.', 'error'); return; }
+
+  const toSend = actions.filter(a => a.checked && a.task.trim());
+  if (!toSend.length) { setStatus('send-status', 'No items checked to send.', 'error'); return; }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  setStatus('send-status', `Creating ${toSend.length} task${toSend.length !== 1 ? 's' : ''}...`, 'loading');
+  document.getElementById('results-list').innerHTML = '';
+
+  const results = [];
+
+  for (const action of toSend) {
+    try {
+      const notes = [
+        action.assignee ? `Assignee mentioned: ${action.assignee}` : '',
+        action.due ? `Due: ${action.due}` : '',
+        '\n— Auto-created from Teams Copilot recap'
+      ].filter(Boolean).join('\n');
+
+      const resp = await fetch('https://app.asana.com/api/1.0/tasks', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          data: {
+            name: action.task,
+            notes: notes,
+            projects: [projectGid]
+          }
+        })
+      });
+
+      if (resp.ok) {
+        results.push({ task: action.task, ok: true });
+      } else {
+        results.push({ task: action.task, ok: false });
+      }
+    } catch (e) {
+      results.push({ task: action.task, ok: false });
+    }
+  }
+
+  btn.disabled = false;
+  const okCount = results.filter(r => r.ok).length;
+  setStatus('send-status', `${okCount} of ${results.length} tasks created.`, okCount === results.length ? 'success' : 'error');
+
+  document.getElementById('results-list').innerHTML = results.map(r => `
+    <div class="result-row">
+      <span style="color:var(--text); font-size:13px;">${esc(r.task)}</span>
+      <span class="${r.ok ? 'result-ok' : 'result-fail'}">${r.ok ? 'Created ✓' : 'Failed ✗'}</span>
+    </div>
+  `).join('');
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `status-msg ${type || ''}`;
+}
+
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
